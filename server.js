@@ -6,9 +6,9 @@ const twilio = require('twilio');
 const { VoiceResponse } = twilio.twiml;
 const AccessToken = twilio.jwt.AccessToken;
 const { VoiceGrant } = AccessToken;
-const path = require('path'); // <-- ADDED: For production build
+const path = require('path');
 
-// --- From config.js ---
+// --- Config ---
 const config = {
     twilio: {
         accountSid: process.env.TWILIO_ACCOUNT_SID,
@@ -20,18 +20,16 @@ const config = {
     }
 };
 
-// --- From token.js (FIXED) ---
-// Helper function to create an Access Token
+// --- Token Functions ---
 const generateToken = (identity, config) => {
     return new AccessToken(
         config.twilio.accountSid,
         config.twilio.apiKey,
         config.twilio.apiSecret,
-        { identity: identity } // <-- CHANGED: Pass identity as options
+        { identity: identity }
     );
 };
 
-// Function to create a Voice Token
 const voiceToken = (identity, config) => {
     let voiceGrant;
     if (typeof config.twilio.outgoingApplicationSid !== "undefined") {
@@ -44,40 +42,33 @@ const voiceToken = (identity, config) => {
             incomingAllow: config.twilio.incomingAllow
         });
     }
-
-    const token = generateToken(identity, config); // <-- CHANGED
+    const token = generateToken(identity, config);
     token.addGrant(voiceGrant);
-    // token.identity = identity; <-- This line is no longer needed
     return token;
 };
 
-// --- From index.js ---
+// --- Express App Setup ---
 const app = express();
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 app.use(pino);
 
-// --- MOVED: Helper function to send a token ---
-const sendTokenResponse = (token, res) => {
-    res.set("Content-Type", "application/json");
-    res.send(
-        JSON.stringify({
-            token: token.toJwt()
-        })
-    );
-};
+// --- Serve React App (Production) ---
+// This serves the static files from the React app
+app.use(express.static(path.join(__dirname, 'build')));
 
 // --- API Routes ---
-// (These are the same as before)
+const sendTokenResponse = (token, res) => {
+    res.set("Content-Type", "application/json");
+    res.send(JSON.stringify({ token: token.toJwt() }));
+};
 
-// This is the route our React app will call
 app.get("/voice/token", (req, res) => {
     const identity = 'my-browser-phone';
     const token = voiceToken(identity, config);
     sendTokenResponse(token, res);
 });
 
-// This is the route your TwiML App will call
 app.post("/voice", (req, res) => {
     const To = req.body.To;
     const response = new VoiceResponse();
@@ -87,7 +78,6 @@ app.post("/voice", (req, res) => {
     res.send(response.toString());
 });
 
-// This route is for INCOMING calls
 app.post("/voice/incoming", (req, res) => {
     const response = new VoiceResponse();
     const dial = response.dial({ callerId: req.body.From, answerOnBridge: true });
@@ -96,20 +86,14 @@ app.post("/voice/incoming", (req, res) => {
     res.send(response.toString());
 });
 
-// --- NEW: Production Build Logic ---
-// This code only runs when you deploy to AWS
-if (process.env.NODE_ENV === 'production') {
-    // Serve the static files from the React app
-    app.use(express.static(path.join(__dirname, 'build')));
+// --- Catch-all route ---
+// This sends all other requests to the React app's index.html
+app.get('*', (req, res) => {
+    res.sendFile(path.join(__dirname, 'build', 'index.html'));
+});
 
-    // All other GET requests not handled by our API will return the React app
-    app.get('*', (req, res) => {
-        res.sendFile(path.join(__dirname, 'build', 'index.html'));
-    });
-}
-
-// Start the server
-const PORT = process.env.PORT || 3001; // Use port 3001 by default
+// --- Start Server ---
+const PORT = process.env.PORT || 3001;
 app.listen(PORT, () =>
     console.log(`Express server is running on port ${PORT}`)
 );
