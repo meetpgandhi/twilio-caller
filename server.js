@@ -6,6 +6,7 @@ const twilio = require('twilio');
 const { VoiceResponse } = twilio.twiml;
 const AccessToken = twilio.jwt.AccessToken;
 const { VoiceGrant } = AccessToken;
+const path = require('path'); // <-- ADDED: For production build
 
 // --- From config.js ---
 const config = {
@@ -21,7 +22,7 @@ const config = {
 
 // --- From token.js (FIXED) ---
 // Helper function to create an Access Token
-const generateToken = (identity, config) => { // <-- CHANGED
+const generateToken = (identity, config) => {
     return new AccessToken(
         config.twilio.accountSid,
         config.twilio.apiKey,
@@ -56,7 +57,7 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 app.use(pino);
 
-// Helper function to send a token
+// --- MOVED: Helper function to send a token ---
 const sendTokenResponse = (token, res) => {
     res.set("Content-Type", "application/json");
     res.send(
@@ -65,6 +66,9 @@ const sendTokenResponse = (token, res) => {
         })
     );
 };
+
+// --- API Routes ---
+// (These are the same as before)
 
 // This is the route our React app will call
 app.get("/voice/token", (req, res) => {
@@ -92,7 +96,21 @@ app.post("/voice/incoming", (req, res) => {
     res.send(response.toString());
 });
 
+// --- NEW: Production Build Logic ---
+// This code only runs when you deploy to AWS
+if (process.env.NODE_ENV === 'production') {
+    // Serve the static files from the React app
+    app.use(express.static(path.join(__dirname, 'build')));
+
+    // All other GET requests not handled by our API will return the React app
+    app.get('*', (req, res) => {
+        res.sendFile(path.join(__dirname, 'build', 'index.html'));
+    });
+}
+
 // Start the server
-app.listen(3001, () =>
-    console.log("Express server is running on localhost:3001")
+const PORT = process.env.PORT || 3001; // Use port 3001 by default
+app.listen(PORT, () =>
+    console.log(`Express server is running on port ${PORT}`)
 );
+
