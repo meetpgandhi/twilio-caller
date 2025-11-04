@@ -1,38 +1,228 @@
-.App {
-  text-align: center;
-}
+/* --- Import modern font --- */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
-}
+/* --- General --- */
+body {
+  margin: 0;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+  'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+  sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
-}
-
-.App-header {
-  background-color: #282c34;
+  /* Modern, eye-soothing background */
+  background-color: #f4f7f6;
+  background-image: linear-gradient(170deg, #f4f7f6 0%, #e8eef2 100%);
   min-height: 100vh;
+}
+
+/* --- Main App Container --- */
+.App {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  font-size: calc(10px + 2vmin);
+  min-height: 100vh;
+  text-align: center;
+  padding: 20px;
+  box-sizing: border-box;
+}
+
+/* --- New Header --- */
+.app-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 24px;
+  color: #1a2b4a; /* Dark blue text */
+}
+
+.header-icon {
+  /* Simple inline SVG phone icon */
+  width: 28px;
+  height: 28px;
+  stroke: #1a2b4a;
+  stroke-width: 2;
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.app-header h1 {
+  font-size: 2.25rem; /* 36px */
+  font-weight: 700;
+  margin: 0;
+}
+
+/* --- The Dialer Card --- */
+.dialer-card {
+  background-color: #ffffff;
+  border-radius: 16px;
+  padding: 32px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05), 0 5px 10px rgba(0, 0, 0, 0.02);
+  width: 100%;
+  max-width: 380px;
+  min-height: 220px; /* Consistent height */
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  transition: all 0.3s ease;
+}
+
+/* --- Status Text --- */
+.status {
+  font-size: 1rem; /* 16px */
+  font-weight: 500;
+  color: #5a6a85; /* Muted text color */
+  margin-bottom: 20px;
+  min-height: 1.2em; /* Prevent layout shift */
+  text-align: center;
+}
+
+/* --- Main Content Area (inside card) --- */
+.dialer-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  width: 100%;
+}
+
+/* --- Input Fields --- */
+.dialer-content label {
+  font-size: 0.875rem; /* 14px */
+  font-weight: 600;
+  color: #1a2b4a;
+  text-align: left;
+  width: 100%;
+}
+
+.dialer-content input[type="text"] {
+  font-family: 'Inter', sans-serif;
+  font-size: 1.125rem; /* 18px */
+  padding: 14px 16px;
+  border: 1px solid #dbe0e6;
+  border-radius: 8px;
+  width: 100%;
+  box-sizing: border-box;
+  transition: all 0.2s ease;
+  text-align: center;
+  font-weight: 500;
+  color: #1a2b4a;
+}
+
+.dialer-content input[type="text"]:focus {
+  outline: none;
+  border-color: #3b82f6; /* Blue focus */
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+}
+
+/* --- Buttons --- */
+.dialer-content button {
+  font-family: 'Inter', sans-serif;
+  font-size: 1rem; /* 16px */
+  font-weight: 600;
+  padding: 14px;
+  border: none;
+  border-radius: 8px;
   color: white;
+  cursor: pointer;
+  width: 100%;
+  transition: all 0.2s ease;
 }
 
-.App-link {
-  color: #61dafb;
+.dialer-content button:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+.dialer-content button:disabled {
+  background-color: #9ca3af; /* Gray */
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
 }
+
+/* "Connect Phone" and "Call" button */
+.btn-primary {
+  background-color: #3b82f6; /* Blue */
+}
+.btn-primary:hover:not(:disabled) {
+  background-color: #2563eb;
+}
+
+/* "Hang Up" button */
+.btn-hangup {
+  background-color: #ef4444; /* Red */
+}
+.btn-hangup:hover {
+  background-color: #dc2626;
+}
+
+/* --- "On Call" Specifics --- */
+.on-call-status {
+  font-size: 1.25rem; /* 20px */
+  font-weight: 600;
+  color: #1a2b4a;
+}
+
+.on-call-number {
+  font-size: 1rem; /* 16px */
+  color: #5a6a85;
+  margin-top: -8px; /* Pull it closer to status */
+}
+
+/* --- "Loading" Specifics --- */
+.loading-text {
+  font-size: 1.125rem; /* 18px */
+  font-weight: 500;
+  color: #5a6a85;
+}
+
+/* --- "Error" Specifics --- */
+.error-text {
+  font-size: 1rem;
+  color: #ef4444; /* Red */
+  max-width: 300px;
+  line-height: 1.5;
+  margin-bottom: 12px;
+}
+.btn-retry {
+  background-color: #6b7280; /* Gray */
+}
+.btn-retry:hover {
+  background-color: #4b5563;
+}
+
+/* --- STYLES FOR MUTE/HANGUP --- */
+.call-controls {
+  display: flex;
+  gap: 12px; /* Space between buttons */
+  width: 100%;
+  margin-top: 8px;
+}
+
+/* Mute button (default state) */
+.btn-mute {
+  background-color: #6b7280; /* Gray */
+  width: 50%; /* Make it half-width */
+}
+.btn-mute:hover {
+  background-color: #4b5563;
+}
+
+/* Mute button (when active) */
+.btn-mute.muted {
+  background-color: #f59e0b; /* Yellow/Orange */
+}
+.btn-mute.muted:hover {
+  background-color: #d97706;
+}
+
+/* Make hangup button half-width in this context */
+.call-controls .btn-hangup {
+  width: 50%;
+}
+
